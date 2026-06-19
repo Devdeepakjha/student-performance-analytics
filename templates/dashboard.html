@@ -1,874 +1,1121 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard – Student Analytics</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-    <style>
-      * *::before,
-      *::after {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
-      :root {
-        --bg: #0f172a;
-        --surface: #1e293b;
-        --surface2: #263043;
-        --accent: #6366f1;
-        --accent-light: #818cf8;
-        --green: #22c55e;
-        --red: #ef4444;
-        --blue: #3b82f6;
-        --yellow: #f59e0b;
-        --text: #f1f5f9;
-        --muted: #94a3b8;
-        --border: #334155;
-        --radius: 12px;
-      }
-      body {
-        font-family: "Inter", sans-serif;
-        background: var(--bg);
-        color: var(--text);
-        padding: 0;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Analytics Dashboard - Student Performance</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <!-- Lucide Icons for React-like modern icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    /* CSS Variables */
+    :root {
+      --primary: #65A30D;
+      --secondary: #84CC16;
+      --dark: #0F172A;
+      --white: #FFFFFF;
+      --gray: #F1F5F9;
+      
+      --bg: #F8FAFC;
+      --surface: rgba(255, 255, 255, 0.55);
+      --surface-hover: rgba(255, 255, 255, 0.8);
+      --border: rgba(255, 255, 255, 0.6);
+      --text: #0F172A;
+      --text-muted: #64748B;
+      
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --radius-xl: 24px;
+      
+      --shadow-sm: 0 4px 12px rgba(0,0,0,0.03);
+      --shadow-md: 0 8px 24px rgba(0,0,0,0.06);
+      --shadow-lg: 0 16px 32px rgba(0,0,0,0.1);
 
-      /* HEADER */
-      header {
-        background: var(--surface);
-        border-bottom: 1px solid var(--border);
-        padding: 1rem 2rem;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        position: sticky;
-        top: 0;
-        z-index: 10;
-      }
-      .header-left {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-      }
-      .header-logo {
-        font-size: 1.5rem;
-      }
-      .header-title {
-        font-size: 1.1rem;
-        font-weight: 700;
-      }
-      .header-title span {
-        color: var(--accent-light);
-      }
-      .s3-badge {
-        font-size: 0.72rem;
-        padding: 0.2rem 0.6rem;
-        border-radius: 20px;
-        font-weight: 500;
-      }
-      .s3-badge.ok {
-        background: rgba(34, 197, 94, 0.15);
-        color: var(--green);
-      }
-      .s3-badge.local {
-        background: rgba(99, 102, 241, 0.15);
-        color: var(--accent-light);
-      }
-      .back-btn {
-        padding: 0.4rem 1rem;
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        color: var(--muted);
-        text-decoration: none;
-        font-size: 0.85rem;
-        transition: all 0.2s;
-      }
-      .back-btn:hover {
-        color: var(--text);
-        border-color: var(--accent);
-      }
+      --green: #16A34A;
+      --red: #DC2626;
+      --blue: #2563EB;
+    }
 
-      /* MAIN */
-      main {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 2rem;
-      }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
-      /* SECTION TITLE */
-      .section-title {
-        font-size: 0.7rem;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: var(--muted);
-        margin-bottom: 1rem;
-      }
+    h1, h2, h3, .page-title, .card-title, .kpi-value, .brand {
+      font-family: 'Oswald', sans-serif;
+      letter-spacing: 0.02em;
+    }
 
-      /* STAT CARDS */
-      .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-        gap: 1rem;
-        margin-bottom: 2rem;
-      }
-      .stat-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        padding: 1.25rem;
-      }
-      .stat-label {
-        font-size: 0.75rem;
-        color: var(--muted);
-        margin-bottom: 0.4rem;
-      }
-      .stat-value {
-        font-size: 2rem;
-        font-weight: 700;
-        line-height: 1;
-      }
-      .stat-sub {
-        font-size: 0.75rem;
-        color: var(--muted);
-        margin-top: 0.25rem;
-      }
-      .c-green {
-        color: var(--green);
-      }
-      .c-red {
-        color: var(--red);
-      }
-      .c-blue {
-        color: var(--blue);
-      }
-      .c-yellow {
-        color: var(--yellow);
-      }
-      .c-accent {
-        color: var(--accent-light);
-      }
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: linear-gradient(135deg, #e0f2fe 0%, #f3e8ff 100%);
+      background-attachment: fixed;
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    /* Glass Orbs */
+    body::before, body::after {
+      content: '';
+      position: fixed;
+      border-radius: 50%;
+      z-index: -1;
+      filter: blur(80px);
+    }
+    body::before {
+      width: 400px;
+      height: 400px;
+      background: rgba(132, 204, 22, 0.4);
+      top: -100px;
+      left: -100px;
+    }
+    body::after {
+      width: 500px;
+      height: 500px;
+      background: rgba(59, 130, 246, 0.3);
+      bottom: -150px;
+      right: -100px;
+    }
 
-      /* TOPPER CARD */
-      .topper-card {
-        background: linear-gradient(
-          135deg,
-          rgba(99, 102, 241, 0.2),
-          rgba(59, 130, 246, 0.1)
-        );
-        border: 1px solid rgba(99, 102, 241, 0.4);
-        border-radius: var(--radius);
-        padding: 1.5rem;
-        display: flex;
-        align-items: center;
-        gap: 1.25rem;
-        margin-bottom: 2rem;
-      }
-      .topper-crown {
-        font-size: 2.5rem;
-      }
-      .topper-name {
-        font-size: 1.3rem;
-        font-weight: 700;
-      }
-      .topper-detail {
-        font-size: 0.85rem;
-        color: var(--muted);
-        margin-top: 0.2rem;
-      }
+    /* Layout */
+    .sidebar {
+      width: 250px;
+      background-color: var(--surface);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      height: 100vh;
+      z-index: 50;
+    }
 
-      /* CHARTS GRID */
-      .charts-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-      }
-      .chart-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        padding: 1.5rem;
-      }
-      .chart-title {
-        font-size: 0.9rem;
-        font-weight: 600;
-        margin-bottom: 1rem;
-        color: var(--text);
-      }
-      .chart-wrap {
-        position: relative;
-        height: 220px;
-      }
+    .main-content {
+      margin-left: 250px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      width: calc(100% - 250px);
+    }
 
-      /* TOP 5 TABLE */
-      .table-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-        overflow-x: auto;
-      }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-      }
-      th {
-        font-size: 0.72rem;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: var(--muted);
-        padding: 0.5rem 0.75rem;
-        text-align: left;
-        border-bottom: 1px solid var(--border);
-      }
-      td {
-        padding: 0.75rem;
-        font-size: 0.9rem;
-        border-bottom: 1px solid rgba(51, 65, 85, 0.5);
-      }
-      tr:last-child td {
-        border-bottom: none;
-      }
-      .rank-badge {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 26px;
-        height: 26px;
-        border-radius: 50%;
-        font-size: 0.78rem;
-        font-weight: 700;
-      }
-      .rank-1 {
-        background: rgba(245, 158, 11, 0.2);
-        color: var(--yellow);
-      }
-      .rank-2 {
-        background: rgba(148, 163, 184, 0.2);
-        color: var(--muted);
-      }
-      .rank-3 {
-        background: rgba(180, 120, 60, 0.15);
-        color: #cd7f32;
-      }
-      .rank-other {
-        background: var(--surface2);
-        color: var(--muted);
-      }
+    /* Sidebar */
+    .brand {
+      padding: 24px 20px;
+      font-size: 1.25rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--dark);
+      border-bottom: 1px solid var(--border);
+    }
+    .brand-icon {
+      color: var(--primary);
+    }
+    .nav-menu {
+      padding: 24px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+    .nav-item i {
+      width: 18px;
+      height: 18px;
+    }
+    .nav-item:hover {
+      background-color: var(--surface);
+      color: var(--dark);
+    }
+    .nav-item.active {
+      background-color: rgba(199, 255, 94, 0.1);
+      color: var(--primary);
+    }
+    
+    /* Top Nav */
+    .top-nav {
+      height: 72px;
+      background-color: var(--surface);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+    .page-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+    }
+    .search-bar {
+      display: flex;
+      align-items: center;
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 8px 16px;
+      width: 280px;
+      color: var(--text-muted);
+    }
+    .search-bar i {
+      width: 16px;
+      height: 16px;
+    }
+    .search-bar input {
+      background: none;
+      border: none;
+      color: var(--text);
+      width: 100%;
+      margin-left: 10px;
+      outline: none;
+      font-family: inherit;
+      font-size: 0.85rem;
+    }
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .cloud-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.75rem;
+      background-color: rgba(199, 255, 94, 0.1);
+      color: var(--primary);
+      padding: 6px 12px;
+      border-radius: var(--radius-lg);
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .cloud-status.local {
+      background-color: rgba(161, 161, 170, 0.1);
+      color: var(--text-muted);
+    }
+    .cloud-status i {
+      width: 14px;
+      height: 14px;
+    }
+    .icon-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: color 0.2s;
+      position: relative;
+    }
+    .icon-btn:hover { color: var(--dark); }
+    .icon-btn i { width: 20px; height: 20px; }
+    .notification-dot {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 8px;
+      height: 8px;
+      background-color: var(--primary);
+      border-radius: 50%;
+      border: 2px solid var(--bg);
+    }
+    .user-profile {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--dark);
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
 
-      .grade-pill {
-        display: inline-block;
-        padding: 0.15rem 0.5rem;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 600;
-      }
-      .grade-A\+ {
-        background: rgba(34, 197, 94, 0.15);
-        color: var(--green);
-      }
-      .grade-A {
-        background: rgba(34, 197, 94, 0.1);
-        color: #86efac;
-      }
-      .grade-B\+ {
-        background: rgba(99, 102, 241, 0.15);
-        color: var(--accent-light);
-      }
-      .grade-B {
-        background: rgba(59, 130, 246, 0.15);
-        color: var(--blue);
-      }
-      .grade-C {
-        background: rgba(245, 158, 11, 0.12);
-        color: var(--yellow);
-      }
-      .grade-D {
-        background: rgba(249, 115, 22, 0.12);
-        color: #fb923c;
-      }
-      .grade-F {
-        background: rgba(239, 68, 68, 0.12);
-        color: var(--red);
-      }
+    /* Main Container */
+    .container {
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
 
-      /* ML PREDICTIONS */
-      .ml-section {
-        margin-bottom: 2rem;
-      }
-      .ml-header {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        margin-bottom: 1rem;
-      }
-      .ml-badge {
-        background: rgba(99, 102, 241, 0.15);
-        color: var(--accent-light);
-        font-size: 0.7rem;
-        padding: 0.2rem 0.6rem;
-        border-radius: 20px;
-        font-weight: 600;
-        letter-spacing: 0.05em;
-      }
-      .ml-cards {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-        gap: 0.75rem;
-      }
-      .ml-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        padding: 1rem;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-      }
-      .ml-trend-icon {
-        font-size: 1.4rem;
-        width: 38px;
-        height: 38px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-      }
-      .ml-student-name {
-        font-size: 0.9rem;
-        font-weight: 600;
-      }
-      .ml-student-roll {
-        font-size: 0.75rem;
-        color: var(--muted);
-      }
-      .ml-trend-label {
-        font-size: 0.78rem;
-        font-weight: 600;
-        margin-top: 0.2rem;
-      }
+    /* Section Headers */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--dark);
+    }
+    .section-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
 
-      .feature-importance {
-        background: var(--surface2);
-        border-radius: 10px;
-        padding: 1rem;
-        margin-top: 1.25rem;
-      }
-      .fi-title {
-        font-size: 0.8rem;
-        color: var(--muted);
-        margin-bottom: 0.75rem;
-      }
-      .fi-row {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        margin-bottom: 0.5rem;
-      }
-      .fi-label {
-        font-size: 0.8rem;
-        width: 90px;
-        flex-shrink: 0;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .fi-bar-bg {
-        flex: 1;
-        background: var(--border);
-        border-radius: 4px;
-        height: 6px;
-      }
-      .fi-bar {
-        height: 6px;
-        border-radius: 4px;
-        background: var(--accent);
-        transition: width 0.6s ease;
-      }
-      .fi-value {
-        font-size: 0.75rem;
-        color: var(--muted);
-        width: 38px;
-        text-align: right;
-      }
+    /* Cards */
+    .card {
+      background-color: var(--surface);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      display: flex;
+      flex-direction: column;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--dark);
+    }
 
-      /* SEARCH */
-      .search-section {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        padding: 1.5rem;
-        margin-bottom: 2rem;
+    /* KPI Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+    .kpi-card {
+      padding: 20px;
+      justify-content: space-between;
+    }
+    .kpi-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-bottom: 16px;
+    }
+    .kpi-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .kpi-icon i { width: 18px; height: 18px; }
+    .kpi-icon.primary { background-color: rgba(199, 255, 94, 0.1); color: var(--primary); }
+    .kpi-icon.blue { background-color: rgba(94, 156, 255, 0.1); color: var(--blue); }
+    .kpi-icon.green { background-color: rgba(34, 197, 94, 0.1); color: #22c55e; }
+    .kpi-icon.purple { background-color: rgba(168, 85, 247, 0.1); color: #a855f7; }
+    .kpi-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--dark);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .kpi-trend {
+      font-size: 0.75rem;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .kpi-trend.up { color: var(--primary); }
+    .kpi-trend.down { color: var(--red); }
+    .kpi-trend.neutral { color: var(--text-muted); }
+    .kpi-trend i { width: 12px; height: 12px; }
+
+    /* Layout Grids */
+    .grid-70-30 {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 1024px) {
+      .grid-70-30 {
+        grid-template-columns: 1fr;
       }
-      .search-title {
-        font-size: 0.9rem;
-        font-weight: 600;
-        margin-bottom: 1rem;
+    }
+    .grid-2-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 768px) {
+      .grid-2-col {
+        grid-template-columns: 1fr;
       }
-      .search-row {
-        display: flex;
-        gap: 0.75rem;
-      }
-      .search-input {
-        flex: 1;
-        background: var(--surface2);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 0.6rem 0.9rem;
-        color: var(--text);
-        font-size: 0.9rem;
-      }
-      .search-input:focus {
-        outline: none;
-        border-color: var(--accent);
-      }
-      .search-btn {
-        padding: 0.6rem 1.25rem;
-        background: var(--accent);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 0.9rem;
-        font-weight: 600;
-        transition: background 0.2s;
-      }
-      .search-btn:hover {
-        background: var(--accent-light);
-      }
-      .search-result {
-        margin-top: 1rem;
-        display: none;
-      }
-      .search-result-card {
-        background: var(--surface2);
-        border-radius: 10px;
-        padding: 1rem;
-      }
-      .search-result-name {
-        font-size: 1.1rem;
-        font-weight: 700;
-      }
-      .search-result-meta {
-        font-size: 0.8rem;
-        color: var(--muted);
-        margin-top: 0.2rem;
-      }
-      .search-subjects {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        margin-top: 0.75rem;
-      }
-      .subject-chip {
-        background: var(--border);
-        border-radius: 6px;
-        padding: 0.25rem 0.6rem;
-        font-size: 0.78rem;
-      }
-      .search-not-found {
-        color: var(--red);
-        font-size: 0.875rem;
-        margin-top: 0.75rem;
-      }
-    </style>
-  </head>
-  <body>
-    <header>
-      <div class="header-left">
-        <span class="header-logo">📊</span>
-        <span class="header-title">Student <span>Analytics</span></span>
-        {% if results.s3_uploaded %}
-        <span class="s3-badge ok">☁ Saved to S3</span>
-        {% else %}
-        <span class="s3-badge local">💾 Local Mode</span>
-        {% endif %}
+    }
+    .col-flex {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Charts */
+    .chart-container {
+      position: relative;
+      height: 280px;
+      width: 100%;
+    }
+    .chart-container.small {
+      height: 200px;
+    }
+
+    /* Lists & Tables */
+    .list-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .list-item:last-child { border-bottom: none; }
+    .student-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .student-details h4 {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--dark);
+    }
+    .student-details p {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    
+    .badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .badge.success { background: rgba(199, 255, 94, 0.1); color: var(--primary); }
+    .badge.warning { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+    .badge.danger { background: rgba(255, 94, 94, 0.1); color: var(--red); }
+    .badge.neutral { background: var(--border); color: var(--text-muted); }
+
+    .table-container {
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th {
+      text-align: left;
+      padding: 12px 16px;
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+    }
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+      color: var(--text);
+    }
+    tr:last-child td { border-bottom: none; }
+    
+    /* Upload & Search Specifics */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      text-align: center;
+      transition: all 0.2s;
+      background-color: rgba(255, 255, 255, 0.01);
+      cursor: pointer;
+      position: relative;
+    }
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: var(--primary);
+      background-color: rgba(199, 255, 94, 0.02);
+    }
+    .upload-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+    .upload-icon {
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+    .upload-zone:hover .upload-icon { color: var(--primary); }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      text-decoration: none;
+    }
+    .btn i { width: 16px; height: 16px; }
+    .btn-primary {
+      background-color: var(--primary);
+      color: var(--dark);
+    }
+    .btn-primary:hover {
+      background-color: var(--secondary);
+      box-shadow: 0 0 12px rgba(199, 255, 94, 0.4);
+    }
+    .btn-outline {
+      background-color: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-outline:hover {
+      background-color: var(--surface-hover);
+      border-color: var(--text-muted);
+    }
+
+    .search-result-card {
+      background: var(--surface);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-top: 16px;
+    }
+    
+    .flex-center { display: flex; align-items: center; gap: 8px; }
+    .flex-between { display: flex; align-items: center; justify-content: space-between; }
+    .mt-4 { margin-top: 16px; }
+    .text-muted { color: var(--text-muted); }
+    .font-semibold { font-weight: 600; }
+    
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #444; }
+
+    /* File status */
+    .file-status {
+      font-size: 0.8rem;
+      color: var(--primary);
+      margin-top: 8px;
+      display: none;
+    }
+    .error-msg {
+      color: var(--red);
+      font-size: 0.8rem;
+      margin-top: 8px;
+    }
+
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    .spin { animation: spin 1s linear infinite; }
+  </style>
+</head>
+<body>
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <i data-lucide="hexagon" class="brand-icon"></i>
+      Analytics
+    </div>
+    <nav class="nav-menu">
+      <a href="#" class="nav-item active">
+        <i data-lucide="layout-dashboard"></i> Dashboard
+      </a>
+      <a href="#analytics" class="nav-item">
+        <i data-lucide="bar-chart-2"></i> Analytics
+      </a>
+      <a href="#intelligence" class="nav-item">
+        <i data-lucide="users"></i> Students
+      </a>
+      <a href="#reports" class="nav-item">
+        <i data-lucide="file-text"></i> Reports
+      </a>
+      <a href="#upload" class="nav-item">
+        <i data-lucide="upload-cloud"></i> Upload Data
+      </a>
+      <div style="flex:1"></div>
+      <a href="#" class="nav-item">
+        <i data-lucide="settings"></i> Settings
+      </a>
+    </nav>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    
+    <!-- TOP NAV -->
+    <header class="top-nav">
+      <div class="nav-left">
+        <div class="page-title">Overview</div>
+        <div class="search-bar">
+          <i data-lucide="search"></i>
+          <input type="text" placeholder="Search anything..." />
+        </div>
       </div>
-      <a href="/download-class-report" class="upload-btn"> 📄 Class Report </a>
-      <a href="/" class="back-btn">← Upload New</a>
+      <div class="nav-right">
+        {% if results.s3_uploaded %}
+        <div class="cloud-status">
+          <i data-lucide="cloud-check"></i> AWS Connected
+        </div>
+        {% else %}
+        <div class="cloud-status local">
+          <i data-lucide="hard-drive"></i> Local Mode
+        </div>
+        {% endif %}
+        
+        <button class="icon-btn">
+          <i data-lucide="bell"></i>
+          <span class="notification-dot"></span>
+        </button>
+        <div class="user-profile">A</div>
+      </div>
     </header>
 
-    <main>
-      <!-- STATS -->
-      <div class="section-title">Class Overview</div>
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-label">Total Students</div>
-          <div class="stat-value c-accent">{{ results.total_students }}</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Class Average</div>
-          <div class="stat-value c-blue">{{ results.class_average }}%</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Passed</div>
-          <div class="stat-value c-green">{{ results.pass_count }}</div>
-          <div class="stat-sub">{{ results.pass_percentage }}% pass rate</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Failed</div>
-          <div class="stat-value c-red">{{ results.fail_count }}</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Highest Score</div>
-          <div class="stat-value c-green">{{ results.highest_score }}%</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Lowest Score</div>
-          <div class="stat-value c-red">{{ results.lowest_score }}%</div>
-        </div>
-      </div>
-
-      <!-- TOPPER -->
-      <div class="topper-card">
-        <div class="topper-crown">🏆</div>
-        <div>
-          <div class="topper-name">{{ results.topper.name }}</div>
-          <div class="topper-detail">
-            Roll: {{ results.topper.roll_number }} &nbsp;|&nbsp; {{
-            results.topper.total }} marks &nbsp;|&nbsp; {{
-            results.topper.percentage }}% — Class Topper
+    <div class="container">
+      
+      <!-- KPI OVERVIEW -->
+      <section>
+        <div class="kpi-grid">
+          <!-- Total Students -->
+          <div class="card kpi-card">
+            <div class="kpi-header">
+              <span>Total Students</span>
+              <div class="kpi-icon primary"><i data-lucide="users"></i></div>
+            </div>
+            <div>
+              <div class="kpi-value">{{ results.total_students }}</div>
+              <div class="kpi-trend neutral">
+                <i data-lucide="minus"></i> <span>Static dataset</span>
+              </div>
+            </div>
+          </div>
+          <!-- Average Percentage -->
+          <div class="card kpi-card">
+            <div class="kpi-header">
+              <span>Class Average</span>
+              <div class="kpi-icon blue"><i data-lucide="percent"></i></div>
+            </div>
+            <div>
+              <div class="kpi-value">{{ results.class_average }}%</div>
+              <div class="kpi-trend up">
+                <i data-lucide="trending-up"></i> <span>Performance</span>
+              </div>
+            </div>
+          </div>
+          <!-- Class Topper -->
+          <div class="card kpi-card">
+            <div class="kpi-header">
+              <span>Class Topper</span>
+              <div class="kpi-icon purple"><i data-lucide="award"></i></div>
+            </div>
+            <div>
+              <div class="kpi-value" style="font-size: 1.4rem;">{{ results.topper.name }}</div>
+              <div class="kpi-trend primary" style="color: var(--primary);">
+                <i data-lucide="check-circle"></i> <span>{{ results.topper.percentage }}% Score</span>
+              </div>
+            </div>
+          </div>
+          <!-- Pass Rate -->
+          <div class="card kpi-card">
+            <div class="kpi-header">
+              <span>Pass Rate</span>
+              <div class="kpi-icon green"><i data-lucide="check-square"></i></div>
+            </div>
+            <div>
+              <div class="kpi-value">{{ results.pass_percentage }}%</div>
+              <div class="kpi-trend up">
+                <i data-lucide="arrow-up-right"></i> <span>{{ results.pass_count }} Passed</span>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <!-- CHARTS -->
-      <div class="section-title">Visualizations</div>
-      <div class="charts-grid">
-        <div class="chart-card">
-          <div class="chart-title">Pass / Fail Distribution</div>
-          <div class="chart-wrap">
-            <canvas id="passFailChart"></canvas>
+      <!-- ANALYTICS SECTION -->
+      <section id="analytics" class="grid-70-30">
+        <div class="col-flex">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Score Distribution Trend</span>
+              <button class="icon-btn"><i data-lucide="more-horizontal"></i></button>
+            </div>
+            <div class="chart-container">
+              <canvas id="histChart"></canvas>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Subject-wise Marks Analysis</span>
+            </div>
+            <div class="chart-container small">
+              <canvas id="subjectChart"></canvas>
+            </div>
           </div>
         </div>
 
-        <div class="chart-card">
-          <div class="chart-title">Subject-wise Average Marks</div>
-          <div class="chart-wrap">
-            <canvas id="subjectChart"></canvas>
+        <div class="col-flex">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Pass / Fail Distribution</span>
+            </div>
+            <div class="chart-container small">
+              <canvas id="passFailChart"></canvas>
+            </div>
+          </div>
+          
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Subject Difficulty</span>
+            </div>
+            <div class="list-item">
+              <div class="student-info">
+                <div class="avatar" style="background: rgba(199,255,94,0.1); color: var(--primary)"><i data-lucide="trending-up" style="width:16px;height:16px;"></i></div>
+                <div class="student-details">
+                  <h4>Strongest Subject</h4>
+                  <p>{{ results.subject_averages|max(attribute='1') }}</p>
+                </div>
+              </div>
+            </div>
+            <div class="list-item" style="border-bottom:none;">
+              <div class="student-info">
+                <div class="avatar" style="background: rgba(255,94,94,0.1); color: var(--red)"><i data-lucide="trending-down" style="width:16px;height:16px;"></i></div>
+                <div class="student-details">
+                  <h4>Weakest Subject</h4>
+                  <p>{{ results.subject_averages|min(attribute='1') }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card">
+             <div class="card-header">
+              <span class="card-title">Cloud Storage</span>
+            </div>
+            <div class="flex-between">
+              <span class="text-muted" style="font-size:0.85rem;">Usage</span>
+              <span class="font-semibold text-white">{% if results.s3_uploaded %}Synced{% else %}Local Only{% endif %}</span>
+            </div>
+            <div style="height: 6px; background: var(--border); border-radius: 3px; margin-top: 12px; overflow: hidden;">
+              <div style="height: 100%; width: {% if results.s3_uploaded %}100%{% else %}0%{% endif %}; background: var(--primary);"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- STUDENT INTELLIGENCE -->
+      <section id="intelligence" class="grid-70-30">
+        <div class="card" style="grid-column: span 2;">
+          <div class="card-header">
+            <span class="card-title">Top 5 Students Ranking</span>
+            <button class="btn btn-outline" style="padding: 6px 12px; font-size: 0.75rem;">View All</button>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Student Name</th>
+                  <th>Roll No.</th>
+                  <th>Total Marks</th>
+                  <th>Percentage</th>
+                  <th>Grade</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for s in results.top5 %}
+                <tr>
+                  <td>
+                    {% if s.rank == 1 %}<span class="badge" style="background:rgba(245, 158, 11, 0.2); color:#f59e0b;">🥇 1st</span>
+                    {% elif s.rank == 2 %}<span class="badge" style="background:rgba(161, 161, 170, 0.2); color:#a1a1aa;">🥈 2nd</span>
+                    {% elif s.rank == 3 %}<span class="badge" style="background:rgba(180, 120, 60, 0.2); color:#cd7f32;">🥉 3rd</span>
+                    {% else %}<span class="badge neutral">{{ s.rank }}th</span>{% endif %}
+                  </td>
+                  <td class="font-semibold" style="color:var(--dark);">{{ s.name }}</td>
+                  <td class="text-muted">{{ s.roll_number }}</td>
+                  <td>{{ s.total }}</td>
+                  <td class="font-semibold">{{ s.percentage }}%</td>
+                  <td><span class="badge {% if s.grade in ['A+', 'A'] %}success{% elif s.grade in ['B+', 'B'] %}neutral{% elif s.grade in ['C', 'D'] %}warning{% else %}danger{% endif %}">{{ s.grade }}</span></td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid-2-col">
+        <!-- At-Risk Students -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title" style="display:flex; align-items:center; gap:8px;">
+              <div style="width:8px;height:8px;border-radius:50%;background:var(--red);"></div>
+              At-Risk Students
+            </span>
+          </div>
+          <div class="table-container" style="max-height: 250px; overflow-y: auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Roll No.</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% set ns = namespace(found=false) %}
+                {% for s in results.students %} 
+                  {% if not s.pass %}
+                    {% set ns.found = true %}
+                    <tr>
+                      <td class="font-semibold" style="color:var(--dark);">{{ s.name }}</td>
+                      <td class="text-muted">{{ s.roll_number }}</td>
+                      <td><span class="badge danger">Needs Attention</span></td>
+                    </tr>
+                  {% endif %} 
+                {% endfor %}
+                {% if not ns.found %}
+                <tr>
+                  <td colspan="3" class="text-muted" style="text-align:center; padding: 24px;">No at-risk students found!</td>
+                </tr>
+                {% endif %}
+              </tbody>
+            </table>
           </div>
         </div>
 
-        <div class="chart-card">
-          <div class="chart-title">Grade Distribution</div>
-          <div class="chart-wrap">
-            <canvas id="gradeChart"></canvas>
+        <!-- Student Search -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Student Search Intelligence</span>
+          </div>
+          <div>
+            <div class="search-bar" style="width: 100%; border-color: var(--border);">
+              <i data-lucide="search" style="color:var(--text-muted);"></i>
+              <input type="text" id="student-search-input" placeholder="Enter Roll Number to analyze..." />
+              <button onclick="searchStudent()" style="background:var(--primary);color:var(--dark);border:none;border-radius:4px;padding:4px 8px;cursor:pointer;font-weight:600;font-size:0.75rem;">Search</button>
+            </div>
+            
+            <div id="search-not-found" class="error-msg" style="display:none; text-align:center; margin-top:20px;">
+              <i data-lucide="user-x" style="margin:0 auto 8px; display:block; width:32px; height:32px;"></i>
+              No student found with that roll number.
+            </div>
+
+            <div id="search-result" style="display: none;">
+              <div class="search-result-card" id="search-result-card">
+                <!-- Injected via JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- REPORTS & UPLOAD -->
+      <section id="reports" class="grid-2-col">
+        <!-- Reports -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Generate Reports</span>
+          </div>
+          <p class="text-muted" style="font-size:0.85rem; margin-bottom: 24px;">Export current dashboard analytics and class performance data into standard formats.</p>
+          <div class="col-flex" style="gap:12px;">
+            <a href="/download-class-report" class="btn btn-primary" style="justify-content: center;">
+              <i data-lucide="file-text"></i> Download Full Class PDF Report
+            </a>
+            <div class="grid-2-col" style="gap:12px;">
+              <button class="btn btn-outline" style="width:100%;"><i data-lucide="download"></i> Export CSV</button>
+              <button class="btn btn-outline" style="width:100%;"><i data-lucide="history"></i> History</button>
+            </div>
           </div>
         </div>
 
-        <div class="chart-card">
-          <div class="chart-title">Score Range Distribution</div>
-          <div class="chart-wrap">
-            <canvas id="histChart"></canvas>
+        <!-- Upload New Data -->
+        <div class="card" id="upload">
+          <div class="card-header">
+            <span class="card-title">Upload New Dataset</span>
           </div>
+          <form action="/upload" method="POST" enctype="multipart/form-data" id="upload-form">
+            <div class="upload-zone" id="drop-zone">
+              <input type="file" name="csv_file" id="csv_file" accept=".csv,.xlsx,.xls" required />
+              <div class="upload-icon flex-center" style="justify-content:center;">
+                <i data-lucide="upload-cloud" style="width:32px; height:32px;"></i>
+              </div>
+              <div style="font-size:0.85rem; font-weight:500; color:var(--dark);">Drag & drop or click to upload</div>
+              <div class="text-muted" style="font-size:0.75rem; margin-top:4px;">Supports .csv, .xlsx, .xls</div>
+              <div class="file-status" id="file-selected"></div>
+            </div>
+            <button type="submit" class="btn btn-primary mt-4" id="submit-btn" style="width:100%;">
+              <i data-lucide="refresh-cw"></i> Process New Data
+            </button>
+          </form>
         </div>
-      </div>
+      </section>
+      
+      <!-- FOOTER -->
+      <footer style="text-align:center; padding: 20px 0; color: var(--text-muted); font-size: 0.75rem;">
+        &copy;Deepka Jha & Rohit Soneji
+      </footer>
 
-      <!-- TOP 5 -->
-      <div class="section-title">Top 5 Students</div>
-      <div class="table-card">
-        <table>
-          <thead>
-            <tr>
-              <th>Rank</th>
-              <th>Name</th>
-              <th>Roll No.</th>
-              <th>Total</th>
-              <th>Percentage</th>
-              <th>Grade</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for s in results.top5 %}
-            <tr>
-              <td>
-                <span
-                  class="rank-badge rank-{{ s.rank if s.rank <= 3 else 'other' }}"
-                >
-                  {% if s.rank == 1 %}🥇{% elif s.rank == 2 %}🥈{% elif s.rank
-                  == 3 %}🥉{% else %}{{ s.rank }}{% endif %}
-                </span>
-              </td>
-              <td><strong>{{ s.name }}</strong></td>
-              <td style="color: var(--muted)">{{ s.roll_number }}</td>
-              <td>{{ s.total }}</td>
-              <td>{{ s.percentage }}%</td>
-              <td>
-                <span class="grade-pill grade-{{ s.grade }}"
-                  >{{ s.grade }}</span
-                >
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
+    </div>
+  </main>
 
-      <!-- ML PREDICTIONS -->
-      <!-- CLASS INSIGHTS -->
+  <script>
+    // Initialize Lucide Icons
+    lucide.createIcons();
 
-      <div class="section-title">Class Insights</div>
+    // Data from Flask
+    const passData = {
+      pass: {{ results.pass_count }},
+      fail: {{ results.fail_count }}
+    };
 
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-label">Top Performer</div>
-          <div class="stat-value c-green">{{ results.topper.name }}</div>
-          <div class="stat-sub">{{ results.topper.percentage }}%</div>
-        </div>
+    const subjects = {{ results.subjects | tojson }};
+    const subjectAverages = {{ results.subject_averages | tojson }};
+    const subjectAvgs = subjects.map(subject => subjectAverages[subject]);
+    
+    const histData = {{ results.percentage_distribution | tojson }};
 
-        <div class="stat-card">
-          <div class="stat-label">Students Requiring Attention</div>
-          <div class="stat-value c-red">{{ results.fail_count }}</div>
-          <div class="stat-sub">Below passing criteria</div>
-        </div>
+    const chartDefaults = {
+      color: '#64748B',
+      borderColor: '#CBD5E1',
+      font: { family: 'Outfit', size: 11 }
+    };
 
-        <div class="stat-card">
-          <div class="stat-label">Best Subject</div>
-          <div class="stat-value c-blue">
-            {{ results.subject_averages|max(attribute='1') }}
+    // 1. Pass/Fail Doughnut
+    new Chart(document.getElementById('passFailChart'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Pass', 'Fail'],
+        datasets: [{ 
+          data: [passData.pass, passData.fail],
+          backgroundColor: ['#C7FF5E', '#FF5E5E'],
+          borderColor: ['#FFFFFF', '#FFFFFF'], 
+          borderWidth: 4 
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, cutout: '70%',
+        plugins: { legend: { position: 'bottom', labels: { color: '#64748B', font: chartDefaults.font, usePointStyle: true, padding: 20 } } }
+      }
+    });
+
+    // 2. Subject Bar Chart
+    new Chart(document.getElementById('subjectChart'), {
+      type: 'bar',
+      data: {
+        labels: subjects,
+        datasets: [{ 
+          label: 'Average Marks', 
+          data: subjectAvgs,
+          backgroundColor: 'rgba(199, 255, 94, 0.8)', 
+          hoverBackgroundColor: '#C7FF5E',
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, max: 100, grid: { color: '#2A2A2A' }, ticks: { color: '#64748B', font: chartDefaults.font } },
+          x: { grid: { display: false }, ticks: { color: '#64748B', font: chartDefaults.font } }
+        }
+      }
+    });
+
+    // 3. Score Range Histogram (Student Performance Trend)
+    new Chart(document.getElementById('histChart'), {
+      type: 'line', 
+      data: {
+        labels: histData.labels,
+        datasets: [{ 
+          label: 'Students Count', 
+          data: histData.data,
+          backgroundColor: 'rgba(199, 255, 94, 0.1)', 
+          borderColor: '#C7FF5E',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: '#FFFFFF',
+          pointBorderColor: '#C7FF5E',
+          pointBorderWidth: 2,
+          pointRadius: 4
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, ticks: { precision: 0, color: '#64748B', font: chartDefaults.font }, grid: { color: '#2A2A2A' } },
+          x: { grid: { display: false }, ticks: { color: '#64748B', font: chartDefaults.font } }
+        }
+      }
+    });
+
+    // Student Search Functionality
+    async function searchStudent() {
+      const roll = document.getElementById('student-search-input').value.trim();
+      if (!roll) return;
+      
+      const res = await fetch('/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roll_number: roll })
+      });
+      const data = await res.json();
+      
+      const resultDiv = document.getElementById('search-result');
+      const notFound = document.getElementById('search-not-found');
+      const card = document.getElementById('search-result-card');
+
+      if (data.found) {
+        const s = data.student;
+        const trendColor = s.pass ? 'var(--primary)' : 'var(--red)';
+        const statusBadge = s.pass ? `<span class="badge success">Pass</span>` : `<span class="badge danger">Fail</span>`;
+        
+        let subjectChips = '';
+        const subjectKeys = Object.keys(s).filter(k =>
+          !['roll_number','name','total','percentage','pass','grade'].includes(k));
+        
+        subjectKeys.forEach(k => {
+          subjectChips += `<div style="background: var(--bg); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; color: var(--text-muted);">${k}: <strong style="color:var(--dark);">${s[k]}</strong></div>`;
+        });
+
+        card.innerHTML = `
+          <div class="flex-between" style="margin-bottom: 12px;">
+            <div>
+              <div style="font-size: 1rem; font-weight: 600; color: var(--dark);">${s.name}</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Roll: ${s.roll_number}</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 1.25rem; font-weight: 700; color: ${trendColor};">${s.percentage}%</div>
+              ${statusBadge}
+            </div>
           </div>
-          <div class="stat-sub">Highest average marks</div>
-        </div>
-      </div>
+          
+          <div style="display: flex; gap: 16px; margin-bottom: 16px; font-size: 0.8rem;">
+            <div>Total: <strong style="color:var(--dark);">${s.total}</strong></div>
+            <div>Grade: <strong style="color:var(--dark);">${s.grade}</strong></div>
+          </div>
 
-      <div class="section-title">Students Requiring Attention</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;">
+            ${subjectChips}
+          </div>
 
-      <div class="table-card">
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Roll No.</th>
-              <th>Percentage</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {% for s in results.students %} {% if not s.pass %}
-
-            <tr>
-              <td><strong>{{ s.name }}</strong></td>
-              <td>{{ s.roll_number }}</td>
-              <td>{{ s.percentage }}%</td>
-              <td style="color: var(--red)">Needs Attention</td>
-            </tr>
-
-            {% endif %} {% endfor %}
-          </tbody>
-        </table>
-      </div>
-
-      <!-- SEARCH -->
-      <div class="search-section">
-        <div class="search-title">🔍 Search Student by Roll Number</div>
-        <div class="search-row">
-          <input
-            type="text"
-            class="search-input"
-            id="search-input"
-            placeholder="Enter Roll Number..."
-          />
-          <button class="search-btn" onclick="searchStudent()">Search</button>
-        </div>
-        <div class="search-result" id="search-result">
-          <div class="search-result-card" id="search-result-card"></div>
-        </div>
-        <div
-          class="search-not-found"
-          id="search-not-found"
-          style="display: none"
-        >
-          ✗ No student found with that roll number.
-        </div>
-      </div>
-    </main>
-
-    <script>
-
-
-                       // --- Data from Flask ---
-
-                  const passData = {
-                    pass: {{ results.pass_count }},
-                    fail: {{ results.fail_count }}
-                  };
-
-                  const subjects = {{ results.subjects | tojson }};
-                  const subjectAverages = {{ results.subject_averages | tojson }};
-
-                  const subjectAvgs = subjects.map(
-                    subject => subjectAverages[subject]
-                  );
-
-                  const gradeDistribution = {{ results.grade_distribution | tojson }};
-
-                  const gradeLabels = Object.keys(gradeDistribution);
-                  const gradeCounts = Object.values(gradeDistribution);
-
-                  const histData = {{ results.percentage_distribution | tojson }};
-
-                  const chartDefaults = {
-              color: '#94a3b8',
-              borderColor: '#334155',
-              font: {
-                family: 'Inter',
-                size: 11
-              }
-            };
-
-                              // Pass/Fail Doughnut
-                              new Chart(document.getElementById('passFailChart'), {
-                                type: 'doughnut',
-                                data: {
-                                  labels: ['Pass', 'Fail'],
-                                  datasets: [{ data: [passData.pass, passData.fail],
-                                    backgroundColor: ['rgba(34,197,94,0.8)', 'rgba(239,68,68,0.8)'],
-                                    borderColor: ['#22c55e', '#ef4444'], borderWidth: 2 }]
-                                },
-                                options: {
-                                  responsive: true, maintainAspectRatio: false, cutout: '65%',
-                                  plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: chartDefaults.font } } }
-                                }
-                              });
-
-                              // Subject Bar Chart
-                              new Chart(document.getElementById('subjectChart'), {
-                                type: 'bar',
-                                data: {
-                                  labels: subjects,
-                                  datasets: [{ label: 'Average Marks', data: subjectAvgs,
-                                    backgroundColor: 'rgba(99,102,241,0.7)', borderColor: '#6366f1',
-                                    borderWidth: 2, borderRadius: 6 }]
-                                },
-                                options: {
-                                  responsive: true, maintainAspectRatio: false,
-                                  plugins: { legend: { display: false } },
-                                  scales: {
-                                    y: { beginAtZero: true, max: 100, grid: { color: '#1e293b' }, ticks: { color: '#94a3b8' } },
-                                    x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
-                                  }
-                                }
-                              });
-
-                              // Grade Distribution Pie
-                              const gradeColors = {
-                                'A+':'rgba(34,197,94,0.8)','A':'rgba(74,222,128,0.8)','B+':'rgba(99,102,241,0.8)',
-                                'B':'rgba(59,130,246,0.8)','C':'rgba(245,158,11,0.8)','D':'rgba(249,115,22,0.8)','F':'rgba(239,68,68,0.8)'
-                              };
-                              new Chart(document.getElementById('gradeChart'), {
-                                type: 'pie',
-                                data: {
-                                  labels: gradeLabels,
-                                  datasets: [{ data: gradeCounts,
-                                    backgroundColor: gradeLabels.map(g => gradeColors[g] || 'rgba(148,163,184,0.8)'),
-                                    borderWidth: 2, borderColor: '#0f172a' }]
-                                },
-                                options: {
-                                  responsive: true, maintainAspectRatio: false,
-                                  plugins: { legend: { position: 'right', labels: { color: '#94a3b8', font: chartDefaults.font, boxWidth: 12 } } }
-                                }
-                              });
-
-                              // Score Histogram
-                              new Chart(document.getElementById('histChart'), {
-                                type: 'bar',
-                                data: {
-                                  labels: histData.labels,
-                                  datasets: [{ label: 'Students', data: histData.data,
-                                    backgroundColor: 'rgba(59,130,246,0.7)', borderColor: '#3b82f6',
-                                    borderWidth: 2, borderRadius: 6 }]
-                                },
-                                options: {
-                                  responsive: true, maintainAspectRatio: false,
-                                  plugins: { legend: { display: false } },
-                                  scales: {
-                                    y: { beginAtZero: true, ticks: { precision: 0, color: '#94a3b8' }, grid: { color: '#1e293b' } },
-                                    x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
-                                  }
-                                }
-                              });
-
-                              // Search
-                              async function searchStudent() {
-                                const roll = document.getElementById('search-input').value.trim();
-                                if (!roll) return;
-                                const res = await fetch('/search', {
-                                  method: 'POST',
-                                  headers: { 'Content-Type': 'application/json' },
-                                  body: JSON.stringify({ roll_number: roll })
-                                });
-                                const data = await res.json();
-                                const resultDiv = document.getElementById('search-result');
-                                const notFound = document.getElementById('search-not-found');
-                                const card = document.getElementById('search-result-card');
-
-                                if (data.found) {
-                                  const s = data.student;
-                                  const trendColor = s.pass ? 'var(--green)' : 'var(--red)';
-                                  let subjectChips = '';
-                                  const subjectKeys = Object.keys(s).filter(k =>
-                                    !['roll_number','name','total','percentage','pass','grade'].includes(k));
-                                  subjectKeys.forEach(k => {
-                                    subjectChips += `<span class="subject-chip">${k}: <strong>${s[k]}</strong></span>`;
-                                  });
-                                  card.innerHTML = `
-        <div class="search-result-name">${s.name}</div>
-
-        <div class="search-result-meta">
-          Roll: ${s.roll_number} &nbsp;|&nbsp;
-          Total: ${s.total} &nbsp;|&nbsp;
-          ${s.percentage}% &nbsp;|&nbsp;
-          <span style="color: ${trendColor}">
-            ${s.pass ? '✓ Pass' : '✗ Fail'}
-          </span>
-          &nbsp;|&nbsp;
-          Grade: <strong>${s.grade}</strong>
-        </div>
-
-        <div class="search-subjects">
-          ${subjectChips}
-        </div>
-
-        <div style="margin-top:20px;">
-          <a
-            href="/download-student-report/${s.roll_number}"
-            class="search-btn"
-            style="
-              text-decoration:none;
-              display:inline-block;
-              padding:12px 18px;
-            "
-          >
-            👤 Download Student Report
+          <a href="/download-student-report/${s.roll_number}" class="btn btn-outline" style="width: 100%; justify-content: center; font-size: 0.75rem; padding: 8px;">
+            <i data-lucide="download"></i> Download Student Report
           </a>
-        </div>
-      `;
-                                  resultDiv.style.display = 'block';
-                                  notFound.style.display = 'none';
-                                } else {
-                                  resultDiv.style.display = 'none';
-                                  notFound.style.display = 'block';
-                                }
-                              }
+        `;
+        resultDiv.style.display = 'block';
+        notFound.style.display = 'none';
+        lucide.createIcons(); // Re-init icons for dynamic content
+      } else {
+        resultDiv.style.display = 'none';
+        notFound.style.display = 'block';
+      }
+    }
 
-                              document.getElementById('search-input').addEventListener('keydown', e => {
-                                if (e.key === 'Enter') searchStudent();
-                              });
-    </script>
+    document.getElementById('student-search-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') searchStudent();
+    });
 
-    <script>
-      console.log("Dashboard Loaded");
-      console.log({{ results.subjects | tojson }});
-      console.log({{ results.subject_averages | tojson }});
-    </script>
-  </body>
+    // Upload Drag & Drop Functionality
+    const input = document.getElementById("csv_file");
+    const selected = document.getElementById("file-selected");
+    const btn = document.getElementById("submit-btn");
+    const dropZone = document.getElementById("drop-zone");
+
+    input.addEventListener("change", () => {
+      if (input.files.length > 0) {
+        selected.innerHTML = `<i data-lucide="check-circle" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:4px;"></i> Selected: ${input.files[0].name}`;
+        selected.style.display = "block";
+        lucide.createIcons();
+      }
+    });
+
+    dropZone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropZone.classList.add("drag-over");
+    });
+    dropZone.addEventListener("dragleave", () => dropZone.classList.remove("drag-over"));
+    dropZone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropZone.classList.remove("drag-over");
+      if (e.dataTransfer.files.length) {
+        input.files = e.dataTransfer.files;
+        selected.innerHTML = `<i data-lucide="check-circle" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:4px;"></i> Selected: ${e.dataTransfer.files[0].name}`;
+        selected.style.display = "block";
+        lucide.createIcons();
+      }
+    });
+
+    document.getElementById("upload-form").addEventListener("submit", () => {
+      btn.disabled = true;
+      btn.innerHTML = `<i data-lucide="loader" class="spin"></i> Processing...`;
+      lucide.createIcons();
+    });
+
+  </script>
+</body>
 </html>
