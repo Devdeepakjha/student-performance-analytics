@@ -1,0 +1,874 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard – Student Analytics</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <style>
+      * *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      :root {
+        --bg: #0f172a;
+        --surface: #1e293b;
+        --surface2: #263043;
+        --accent: #6366f1;
+        --accent-light: #818cf8;
+        --green: #22c55e;
+        --red: #ef4444;
+        --blue: #3b82f6;
+        --yellow: #f59e0b;
+        --text: #f1f5f9;
+        --muted: #94a3b8;
+        --border: #334155;
+        --radius: 12px;
+      }
+      body {
+        font-family: "Inter", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        padding: 0;
+      }
+
+      /* HEADER */
+      header {
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        padding: 1rem 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+      .header-logo {
+        font-size: 1.5rem;
+      }
+      .header-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+      }
+      .header-title span {
+        color: var(--accent-light);
+      }
+      .s3-badge {
+        font-size: 0.72rem;
+        padding: 0.2rem 0.6rem;
+        border-radius: 20px;
+        font-weight: 500;
+      }
+      .s3-badge.ok {
+        background: rgba(34, 197, 94, 0.15);
+        color: var(--green);
+      }
+      .s3-badge.local {
+        background: rgba(99, 102, 241, 0.15);
+        color: var(--accent-light);
+      }
+      .back-btn {
+        padding: 0.4rem 1rem;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--muted);
+        text-decoration: none;
+        font-size: 0.85rem;
+        transition: all 0.2s;
+      }
+      .back-btn:hover {
+        color: var(--text);
+        border-color: var(--accent);
+      }
+
+      /* MAIN */
+      main {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+
+      /* SECTION TITLE */
+      .section-title {
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 1rem;
+      }
+
+      /* STAT CARDS */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+      }
+      .stat-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.25rem;
+      }
+      .stat-label {
+        font-size: 0.75rem;
+        color: var(--muted);
+        margin-bottom: 0.4rem;
+      }
+      .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1;
+      }
+      .stat-sub {
+        font-size: 0.75rem;
+        color: var(--muted);
+        margin-top: 0.25rem;
+      }
+      .c-green {
+        color: var(--green);
+      }
+      .c-red {
+        color: var(--red);
+      }
+      .c-blue {
+        color: var(--blue);
+      }
+      .c-yellow {
+        color: var(--yellow);
+      }
+      .c-accent {
+        color: var(--accent-light);
+      }
+
+      /* TOPPER CARD */
+      .topper-card {
+        background: linear-gradient(
+          135deg,
+          rgba(99, 102, 241, 0.2),
+          rgba(59, 130, 246, 0.1)
+        );
+        border: 1px solid rgba(99, 102, 241, 0.4);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        margin-bottom: 2rem;
+      }
+      .topper-crown {
+        font-size: 2.5rem;
+      }
+      .topper-name {
+        font-size: 1.3rem;
+        font-weight: 700;
+      }
+      .topper-detail {
+        font-size: 0.85rem;
+        color: var(--muted);
+        margin-top: 0.2rem;
+      }
+
+      /* CHARTS GRID */
+      .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+      }
+      .chart-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+      }
+      .chart-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: var(--text);
+      }
+      .chart-wrap {
+        position: relative;
+        height: 220px;
+      }
+
+      /* TOP 5 TABLE */
+      .table-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        overflow-x: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        padding: 0.5rem 0.75rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+      }
+      td {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+        border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+      }
+      tr:last-child td {
+        border-bottom: none;
+      }
+      .rank-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        font-size: 0.78rem;
+        font-weight: 700;
+      }
+      .rank-1 {
+        background: rgba(245, 158, 11, 0.2);
+        color: var(--yellow);
+      }
+      .rank-2 {
+        background: rgba(148, 163, 184, 0.2);
+        color: var(--muted);
+      }
+      .rank-3 {
+        background: rgba(180, 120, 60, 0.15);
+        color: #cd7f32;
+      }
+      .rank-other {
+        background: var(--surface2);
+        color: var(--muted);
+      }
+
+      .grade-pill {
+        display: inline-block;
+        padding: 0.15rem 0.5rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+      .grade-A\+ {
+        background: rgba(34, 197, 94, 0.15);
+        color: var(--green);
+      }
+      .grade-A {
+        background: rgba(34, 197, 94, 0.1);
+        color: #86efac;
+      }
+      .grade-B\+ {
+        background: rgba(99, 102, 241, 0.15);
+        color: var(--accent-light);
+      }
+      .grade-B {
+        background: rgba(59, 130, 246, 0.15);
+        color: var(--blue);
+      }
+      .grade-C {
+        background: rgba(245, 158, 11, 0.12);
+        color: var(--yellow);
+      }
+      .grade-D {
+        background: rgba(249, 115, 22, 0.12);
+        color: #fb923c;
+      }
+      .grade-F {
+        background: rgba(239, 68, 68, 0.12);
+        color: var(--red);
+      }
+
+      /* ML PREDICTIONS */
+      .ml-section {
+        margin-bottom: 2rem;
+      }
+      .ml-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+      }
+      .ml-badge {
+        background: rgba(99, 102, 241, 0.15);
+        color: var(--accent-light);
+        font-size: 0.7rem;
+        padding: 0.2rem 0.6rem;
+        border-radius: 20px;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+      }
+      .ml-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 0.75rem;
+      }
+      .ml-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+      .ml-trend-icon {
+        font-size: 1.4rem;
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .ml-student-name {
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+      .ml-student-roll {
+        font-size: 0.75rem;
+        color: var(--muted);
+      }
+      .ml-trend-label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        margin-top: 0.2rem;
+      }
+
+      .feature-importance {
+        background: var(--surface2);
+        border-radius: 10px;
+        padding: 1rem;
+        margin-top: 1.25rem;
+      }
+      .fi-title {
+        font-size: 0.8rem;
+        color: var(--muted);
+        margin-bottom: 0.75rem;
+      }
+      .fi-row {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.5rem;
+      }
+      .fi-label {
+        font-size: 0.8rem;
+        width: 90px;
+        flex-shrink: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .fi-bar-bg {
+        flex: 1;
+        background: var(--border);
+        border-radius: 4px;
+        height: 6px;
+      }
+      .fi-bar {
+        height: 6px;
+        border-radius: 4px;
+        background: var(--accent);
+        transition: width 0.6s ease;
+      }
+      .fi-value {
+        font-size: 0.75rem;
+        color: var(--muted);
+        width: 38px;
+        text-align: right;
+      }
+
+      /* SEARCH */
+      .search-section {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+      }
+      .search-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+      }
+      .search-row {
+        display: flex;
+        gap: 0.75rem;
+      }
+      .search-input {
+        flex: 1;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 0.6rem 0.9rem;
+        color: var(--text);
+        font-size: 0.9rem;
+      }
+      .search-input:focus {
+        outline: none;
+        border-color: var(--accent);
+      }
+      .search-btn {
+        padding: 0.6rem 1.25rem;
+        background: var(--accent);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: background 0.2s;
+      }
+      .search-btn:hover {
+        background: var(--accent-light);
+      }
+      .search-result {
+        margin-top: 1rem;
+        display: none;
+      }
+      .search-result-card {
+        background: var(--surface2);
+        border-radius: 10px;
+        padding: 1rem;
+      }
+      .search-result-name {
+        font-size: 1.1rem;
+        font-weight: 700;
+      }
+      .search-result-meta {
+        font-size: 0.8rem;
+        color: var(--muted);
+        margin-top: 0.2rem;
+      }
+      .search-subjects {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+      }
+      .subject-chip {
+        background: var(--border);
+        border-radius: 6px;
+        padding: 0.25rem 0.6rem;
+        font-size: 0.78rem;
+      }
+      .search-not-found {
+        color: var(--red);
+        font-size: 0.875rem;
+        margin-top: 0.75rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="header-left">
+        <span class="header-logo">📊</span>
+        <span class="header-title">Student <span>Analytics</span></span>
+        {% if results.s3_uploaded %}
+        <span class="s3-badge ok">☁ Saved to S3</span>
+        {% else %}
+        <span class="s3-badge local">💾 Local Mode</span>
+        {% endif %}
+      </div>
+      <a href="/download-class-report" class="upload-btn"> 📄 Class Report </a>
+      <a href="/" class="back-btn">← Upload New</a>
+    </header>
+
+    <main>
+      <!-- STATS -->
+      <div class="section-title">Class Overview</div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Students</div>
+          <div class="stat-value c-accent">{{ results.total_students }}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Class Average</div>
+          <div class="stat-value c-blue">{{ results.class_average }}%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Passed</div>
+          <div class="stat-value c-green">{{ results.pass_count }}</div>
+          <div class="stat-sub">{{ results.pass_percentage }}% pass rate</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Failed</div>
+          <div class="stat-value c-red">{{ results.fail_count }}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Highest Score</div>
+          <div class="stat-value c-green">{{ results.highest_score }}%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Lowest Score</div>
+          <div class="stat-value c-red">{{ results.lowest_score }}%</div>
+        </div>
+      </div>
+
+      <!-- TOPPER -->
+      <div class="topper-card">
+        <div class="topper-crown">🏆</div>
+        <div>
+          <div class="topper-name">{{ results.topper.name }}</div>
+          <div class="topper-detail">
+            Roll: {{ results.topper.roll_number }} &nbsp;|&nbsp; {{
+            results.topper.total }} marks &nbsp;|&nbsp; {{
+            results.topper.percentage }}% — Class Topper
+          </div>
+        </div>
+      </div>
+
+      <!-- CHARTS -->
+      <div class="section-title">Visualizations</div>
+      <div class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-title">Pass / Fail Distribution</div>
+          <div class="chart-wrap">
+            <canvas id="passFailChart"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-title">Subject-wise Average Marks</div>
+          <div class="chart-wrap">
+            <canvas id="subjectChart"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-title">Grade Distribution</div>
+          <div class="chart-wrap">
+            <canvas id="gradeChart"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-title">Score Range Distribution</div>
+          <div class="chart-wrap">
+            <canvas id="histChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- TOP 5 -->
+      <div class="section-title">Top 5 Students</div>
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Name</th>
+              <th>Roll No.</th>
+              <th>Total</th>
+              <th>Percentage</th>
+              <th>Grade</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in results.top5 %}
+            <tr>
+              <td>
+                <span
+                  class="rank-badge rank-{{ s.rank if s.rank <= 3 else 'other' }}"
+                >
+                  {% if s.rank == 1 %}🥇{% elif s.rank == 2 %}🥈{% elif s.rank
+                  == 3 %}🥉{% else %}{{ s.rank }}{% endif %}
+                </span>
+              </td>
+              <td><strong>{{ s.name }}</strong></td>
+              <td style="color: var(--muted)">{{ s.roll_number }}</td>
+              <td>{{ s.total }}</td>
+              <td>{{ s.percentage }}%</td>
+              <td>
+                <span class="grade-pill grade-{{ s.grade }}"
+                  >{{ s.grade }}</span
+                >
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ML PREDICTIONS -->
+      <!-- CLASS INSIGHTS -->
+
+      <div class="section-title">Class Insights</div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Top Performer</div>
+          <div class="stat-value c-green">{{ results.topper.name }}</div>
+          <div class="stat-sub">{{ results.topper.percentage }}%</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">Students Requiring Attention</div>
+          <div class="stat-value c-red">{{ results.fail_count }}</div>
+          <div class="stat-sub">Below passing criteria</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">Best Subject</div>
+          <div class="stat-value c-blue">
+            {{ results.subject_averages|max(attribute='1') }}
+          </div>
+          <div class="stat-sub">Highest average marks</div>
+        </div>
+      </div>
+
+      <div class="section-title">Students Requiring Attention</div>
+
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Roll No.</th>
+              <th>Percentage</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for s in results.students %} {% if not s.pass %}
+
+            <tr>
+              <td><strong>{{ s.name }}</strong></td>
+              <td>{{ s.roll_number }}</td>
+              <td>{{ s.percentage }}%</td>
+              <td style="color: var(--red)">Needs Attention</td>
+            </tr>
+
+            {% endif %} {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- SEARCH -->
+      <div class="search-section">
+        <div class="search-title">🔍 Search Student by Roll Number</div>
+        <div class="search-row">
+          <input
+            type="text"
+            class="search-input"
+            id="search-input"
+            placeholder="Enter Roll Number..."
+          />
+          <button class="search-btn" onclick="searchStudent()">Search</button>
+        </div>
+        <div class="search-result" id="search-result">
+          <div class="search-result-card" id="search-result-card"></div>
+        </div>
+        <div
+          class="search-not-found"
+          id="search-not-found"
+          style="display: none"
+        >
+          ✗ No student found with that roll number.
+        </div>
+      </div>
+    </main>
+
+    <script>
+
+
+                       // --- Data from Flask ---
+
+                  const passData = {
+                    pass: {{ results.pass_count }},
+                    fail: {{ results.fail_count }}
+                  };
+
+                  const subjects = {{ results.subjects | tojson }};
+                  const subjectAverages = {{ results.subject_averages | tojson }};
+
+                  const subjectAvgs = subjects.map(
+                    subject => subjectAverages[subject]
+                  );
+
+                  const gradeDistribution = {{ results.grade_distribution | tojson }};
+
+                  const gradeLabels = Object.keys(gradeDistribution);
+                  const gradeCounts = Object.values(gradeDistribution);
+
+                  const histData = {{ results.percentage_distribution | tojson }};
+
+                  const chartDefaults = {
+              color: '#94a3b8',
+              borderColor: '#334155',
+              font: {
+                family: 'Inter',
+                size: 11
+              }
+            };
+
+                              // Pass/Fail Doughnut
+                              new Chart(document.getElementById('passFailChart'), {
+                                type: 'doughnut',
+                                data: {
+                                  labels: ['Pass', 'Fail'],
+                                  datasets: [{ data: [passData.pass, passData.fail],
+                                    backgroundColor: ['rgba(34,197,94,0.8)', 'rgba(239,68,68,0.8)'],
+                                    borderColor: ['#22c55e', '#ef4444'], borderWidth: 2 }]
+                                },
+                                options: {
+                                  responsive: true, maintainAspectRatio: false, cutout: '65%',
+                                  plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: chartDefaults.font } } }
+                                }
+                              });
+
+                              // Subject Bar Chart
+                              new Chart(document.getElementById('subjectChart'), {
+                                type: 'bar',
+                                data: {
+                                  labels: subjects,
+                                  datasets: [{ label: 'Average Marks', data: subjectAvgs,
+                                    backgroundColor: 'rgba(99,102,241,0.7)', borderColor: '#6366f1',
+                                    borderWidth: 2, borderRadius: 6 }]
+                                },
+                                options: {
+                                  responsive: true, maintainAspectRatio: false,
+                                  plugins: { legend: { display: false } },
+                                  scales: {
+                                    y: { beginAtZero: true, max: 100, grid: { color: '#1e293b' }, ticks: { color: '#94a3b8' } },
+                                    x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                                  }
+                                }
+                              });
+
+                              // Grade Distribution Pie
+                              const gradeColors = {
+                                'A+':'rgba(34,197,94,0.8)','A':'rgba(74,222,128,0.8)','B+':'rgba(99,102,241,0.8)',
+                                'B':'rgba(59,130,246,0.8)','C':'rgba(245,158,11,0.8)','D':'rgba(249,115,22,0.8)','F':'rgba(239,68,68,0.8)'
+                              };
+                              new Chart(document.getElementById('gradeChart'), {
+                                type: 'pie',
+                                data: {
+                                  labels: gradeLabels,
+                                  datasets: [{ data: gradeCounts,
+                                    backgroundColor: gradeLabels.map(g => gradeColors[g] || 'rgba(148,163,184,0.8)'),
+                                    borderWidth: 2, borderColor: '#0f172a' }]
+                                },
+                                options: {
+                                  responsive: true, maintainAspectRatio: false,
+                                  plugins: { legend: { position: 'right', labels: { color: '#94a3b8', font: chartDefaults.font, boxWidth: 12 } } }
+                                }
+                              });
+
+                              // Score Histogram
+                              new Chart(document.getElementById('histChart'), {
+                                type: 'bar',
+                                data: {
+                                  labels: histData.labels,
+                                  datasets: [{ label: 'Students', data: histData.data,
+                                    backgroundColor: 'rgba(59,130,246,0.7)', borderColor: '#3b82f6',
+                                    borderWidth: 2, borderRadius: 6 }]
+                                },
+                                options: {
+                                  responsive: true, maintainAspectRatio: false,
+                                  plugins: { legend: { display: false } },
+                                  scales: {
+                                    y: { beginAtZero: true, ticks: { precision: 0, color: '#94a3b8' }, grid: { color: '#1e293b' } },
+                                    x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                                  }
+                                }
+                              });
+
+                              // Search
+                              async function searchStudent() {
+                                const roll = document.getElementById('search-input').value.trim();
+                                if (!roll) return;
+                                const res = await fetch('/search', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ roll_number: roll })
+                                });
+                                const data = await res.json();
+                                const resultDiv = document.getElementById('search-result');
+                                const notFound = document.getElementById('search-not-found');
+                                const card = document.getElementById('search-result-card');
+
+                                if (data.found) {
+                                  const s = data.student;
+                                  const trendColor = s.pass ? 'var(--green)' : 'var(--red)';
+                                  let subjectChips = '';
+                                  const subjectKeys = Object.keys(s).filter(k =>
+                                    !['roll_number','name','total','percentage','pass','grade'].includes(k));
+                                  subjectKeys.forEach(k => {
+                                    subjectChips += `<span class="subject-chip">${k}: <strong>${s[k]}</strong></span>`;
+                                  });
+                                  card.innerHTML = `
+        <div class="search-result-name">${s.name}</div>
+
+        <div class="search-result-meta">
+          Roll: ${s.roll_number} &nbsp;|&nbsp;
+          Total: ${s.total} &nbsp;|&nbsp;
+          ${s.percentage}% &nbsp;|&nbsp;
+          <span style="color: ${trendColor}">
+            ${s.pass ? '✓ Pass' : '✗ Fail'}
+          </span>
+          &nbsp;|&nbsp;
+          Grade: <strong>${s.grade}</strong>
+        </div>
+
+        <div class="search-subjects">
+          ${subjectChips}
+        </div>
+
+        <div style="margin-top:20px;">
+          <a
+            href="/download-student-report/${s.roll_number}"
+            class="search-btn"
+            style="
+              text-decoration:none;
+              display:inline-block;
+              padding:12px 18px;
+            "
+          >
+            👤 Download Student Report
+          </a>
+        </div>
+      `;
+                                  resultDiv.style.display = 'block';
+                                  notFound.style.display = 'none';
+                                } else {
+                                  resultDiv.style.display = 'none';
+                                  notFound.style.display = 'block';
+                                }
+                              }
+
+                              document.getElementById('search-input').addEventListener('keydown', e => {
+                                if (e.key === 'Enter') searchStudent();
+                              });
+    </script>
+
+    <script>
+      console.log("Dashboard Loaded");
+      console.log({{ results.subjects | tojson }});
+      console.log({{ results.subject_averages | tojson }});
+    </script>
+  </body>
+</html>
