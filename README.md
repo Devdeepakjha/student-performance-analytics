@@ -25,6 +25,20 @@ Student Performance Analytics is an end-to-end cloud application built using:
 The platform allows users to upload student datasets, perform automated analysis, generate PDF reports, search individual students, and obtain machine-learning-based performance insights.
 
 ---
+## 📸 Screenshots
+
+### 🏠 Homepage
+<img width="1600" height="900" alt="homepage" src="https://github.com/user-attachments/assets/b6990922-b901-4abf-89ab-efcf9b826125" />
+
+### 📊 Analytics Dashboard
+<img width="1600" height="900" alt="dashboard" src="https://github.com/user-attachments/assets/2a9949db-749a-4f64-8d91-66aa55a85cc9" />
+
+### ☁️ AWS EC2 Deployment
+<img width="1920" height="1080" alt="aws-ec2" src="https://github.com/user-attachments/assets/9199a2c6-d929-4bb6-990c-1b0fa3c56a02" />
+
+### 🪣 AWS S3 Storage
+<img width="1920" height="1080" alt="aws-s3" src="https://github.com/user-attachments/assets/1fe765cd-7127-4871-93cd-7407c24a1b70" />
+
 
 ## 🚀 Features
 
