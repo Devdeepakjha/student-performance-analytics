@@ -39,6 +39,17 @@ The platform allows users to upload student datasets, perform automated analysis
 ### 🪣 AWS S3 Storage
 <img width="1920" height="1080" alt="aws-s3" src="https://github.com/user-attachments/assets/1fe765cd-7127-4871-93cd-7407c24a1b70" />
 
+## Production Deployment
+
+The application is deployed on AWS EC2 using:
+
+- Flask
+- Gunicorn (WSGI Server)
+- Systemd Service Management
+- AWS S3 Storage
+- IAM User Access Control
+
+The application automatically starts on server reboot using a Linux systemd service.
 
 ## 🚀 Features
 
